@@ -2,9 +2,9 @@ name: notecard_env_var_manager CI Pipeline
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   run_unit_tests:
