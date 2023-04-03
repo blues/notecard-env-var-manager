@@ -27,11 +27,11 @@ CMAKE_OPTIONS="-DNEVM_BUILD_TESTS=1 -DBUILD_SHARED_LIBS=1"
 BUILD_OPTIONS=""
 CTEST_OPTIONS=""
 if [[ $COVERAGE -eq 1 ]]; then
-    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DCOVERAGE=1"
+    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DNEVM_COVERAGE=1"
     BUILD_OPTIONS="${BUILD_OPTIONS} coverage"
 fi
 if [[ $MEM_CHECK -eq 1 ]]; then
-    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DMEM_CHECK=1"
+    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DNEVM_MEM_CHECK=1"
     CTEST_OPTIONS="${CTEST_OPTIONS} -T memcheck"
 
     # This fixes a problem when running valgrind in a Docker container when the
