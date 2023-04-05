@@ -26,8 +26,6 @@ add_subdirectory(${SRC_DIR}/note-c)
 
 add_library(
     notecard_env_var_manager
-    ${SRC_DIR}/log.c
-    ${SRC_DIR}/NotecardEnvVarCache.c
     ${SRC_DIR}/NotecardEnvVarManager.c
 )
 target_compile_options(

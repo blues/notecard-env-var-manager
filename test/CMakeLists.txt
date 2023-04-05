@@ -52,7 +52,6 @@ macro(add_test TEST_NAME)
     catch_discover_tests(${TEST_NAME})
 endmacro(add_test)
 
-add_test(NotecardEnvVarCache_test)
 add_test(NotecardEnvVarManager_test)
 
 if(NEVM_COVERAGE)

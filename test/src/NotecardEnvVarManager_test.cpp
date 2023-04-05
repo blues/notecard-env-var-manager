@@ -42,7 +42,7 @@ const char *vals[] = {
 uint32_t userCtx = 42;
 bool changeCbCalled[numWatchVars] = {false, false, false};
 
-int envChangeCb(const char *var, const char *val, void *ctx)
+void userCb(const char *var, const char *val, void *ctx)
 {
     int ret = NEVM_FAILURE;
 
@@ -50,87 +50,83 @@ int envChangeCb(const char *var, const char *val, void *ctx)
         if (strcmp(var, watchVars[i]) == 0 && strcmp(val, vals[i]) == 0 &&
                 userCtx == *((uint32_t *)ctx)) {
             changeCbCalled[i] = true;
-            ret = NEVM_SUCCESS;
             break;
         }
     }
+}
 
-    return ret;
+J *savedReq = NULL;
+J *rsp = NULL;
+
+J *NoteTransactionSaveRequest(J *req)
+{
+    if (savedReq != NULL) {
+        JDelete(savedReq);
+    }
+
+    savedReq = JDuplicate(req, true);
+
+    return rsp;
 }
 
 TEST_CASE("NotecardEnvVarManager")
 {
     RESET_FAKE(NoteTransaction);
-    RESET_FAKE(_envModified);
 
     NoteSetFnDefault(malloc, free, NULL, NULL);
     char rawRsp[128];
     char val[16];
-
-    for (size_t i = 0; i < sizeof(changeCbCalled)/sizeof(*changeCbCalled); ++i) {
-        changeCbCalled[i] = false;
-    }
+    snprintf(rawRsp, sizeof(rawRsp),
+             "{"
+             "\"body\": {"
+             "\"%s\": \"%s\","
+             "\"%s\": \"%s\","
+             "\"%s\": \"%s\""
+             "}"
+             "}", watchVars[0], vals[0], watchVars[1], vals[1], watchVars[2],
+             vals[2]
+            );
+    rsp = JParse(rawRsp);
+    REQUIRE(rsp != NULL);
+    NoteTransaction_fake.return_val = rsp;
 
     NotecardEnvVarManager *man = NotecardEnvVarManager_alloc();
     REQUIRE(man != NULL);
-    CHECK(NotecardEnvVarManager_setWatchVars(man, watchVars, numWatchVars) ==
-          NEVM_SUCCESS);
-    CHECK(NotecardEnvVarManager_setEnvFetchCb(man, envChangeCb, &userCtx) ==
+    CHECK(NotecardEnvVarManager_setEnvVarCb(man, userCb, &userCtx) ==
           NEVM_SUCCESS);
 
-    SECTION("No cache") {
-        for (size_t i = 0; i < numWatchVars; ++i) {
-            J *rsp = JCreateObject();
-            REQUIRE(rsp != NULL);
-            JAddStringToObject(rsp, "text", vals[i]);
-            NoteTransaction_fake.return_val = rsp;
-
-            REQUIRE(NotecardEnvVarManager_get(man, watchVars[i], val,
-                                              sizeof(val)) == NEVM_SUCCESS);
-            CHECK(strcmp(val, vals[i]) == 0);
-            CHECK(changeCbCalled[i]);
-        }
+    SECTION("Fetch") {
+        CHECK(NotecardEnvVarManager_fetch(man, watchVars, numWatchVars)
+              == NEVM_SUCCESS);
     }
 
-    SECTION("Cache") {
-        CHECK(NotecardEnvVarManager_enableCache(man) == NEVM_SUCCESS);
+    SECTION("Process") {
+        CHECK(NotecardEnvVarManager_setWatchVars(man, watchVars, numWatchVars)
+              == NEVM_SUCCESS);
+        CHECK(NotecardEnvVarManager_process(man) == NEVM_SUCCESS);
+    }
 
-        snprintf(rawRsp, sizeof(rawRsp),
-                 "{"
-                 "\"body\": {"
-                 "\"%s\": \"%s\","
-                 "\"%s\": \"%s\","
-                 "\"%s\": \"%s\""
-                 "}"
-                 "}", watchVars[0], vals[0], watchVars[1], vals[1], watchVars[2],
-                 vals[2]
-                );
-        J *rsp = JParse(rawRsp);
-        REQUIRE(rsp != NULL);
-        NoteTransaction_fake.return_val = rsp;
+    SECTION("Fetch with NEVM_ENV_VAR_ALL") {
+        // Fetch with NEVM_ENV_VAR_ALL should result in a request for all
+        // environment variables (i.e. env.get with no "names" field).
+        NoteTransaction_fake.custom_fake = NoteTransactionSaveRequest;
+        J *expectedReq = JParse("{\"req\": \"env.get\"}");
 
-        int envModifiedRetVals[] = {NEVM_SUCCESS, NEVM_FAILURE};
-        SET_RETURN_SEQ(_envModified, envModifiedRetVals, 2);
+        CHECK(NotecardEnvVarManager_fetch(man, NULL, NEVM_ENV_VAR_ALL)
+              == NEVM_SUCCESS);
+        CHECK(JCompare(savedReq, expectedReq, false));
 
-        for (size_t i = 0; i < numWatchVars; ++i) {
-            REQUIRE(NotecardEnvVarManager_get(man, watchVars[i], val,
-                                              sizeof(val)) == NEVM_SUCCESS);
-            CHECK(strcmp(val, vals[i]) == 0);
-            CHECK(changeCbCalled[i]);
-        }
+        JDelete(expectedReq);
+    }
 
-        // Only one Notecard request should be made to get the env vars.
-        // Subsequent env var queries should hit the cache.
-        CHECK(NoteTransaction_fake.call_count == 1);
-
-        // Trying to get a variable that isn't watched should fail.
-        val[0] = '\0';
-        CHECK(NotecardEnvVarManager_get(man, "bogus", val, sizeof(val))
-              != NEVM_SUCCESS);
-        CHECK(strlen(val) == 0);
+    for (size_t i = 0; i < sizeof(changeCbCalled)/sizeof(*changeCbCalled); ++i) {
+        CHECK(changeCbCalled[i]);
+        changeCbCalled[i] = false;
     }
 
     NotecardEnvVarManager_free(man);
+    JDelete(savedReq);
+    savedReq = NULL;
 }
 
 }
