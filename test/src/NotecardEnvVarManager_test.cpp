@@ -23,7 +23,6 @@
 
 DEFINE_FFF_GLOBALS
 FAKE_VALUE_FUNC(J *, NoteTransaction, J *)
-FAKE_VALUE_FUNC(int, _envModified, NotecardEnvVarManager *)
 
 namespace
 {

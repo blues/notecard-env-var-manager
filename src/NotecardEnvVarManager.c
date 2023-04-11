@@ -13,9 +13,8 @@ struct NotecardEnvVarManager {
     envVarCb userCb;
     void *userCtx;
     size_t numWatchVars;
-    uint32_t processIntervalMs;
-    uint32_t lastProcessCallMs;
-    uint32_t envLastModTime;
+    uint32_t watchIntervalMs;
+    uint32_t lastFetchMs;
 };
 
 /**
@@ -29,7 +28,7 @@ struct NotecardEnvVarManager {
  *                environment variables, regardless of what is specified by
  *                vars.
  *
- * @return NEVM_SUCCESS on success and negative values on failure.
+ * @return Valid request J * on success and NULL on failure.
  */
 static J *_buildEnvGetRequest(const char **vars, size_t numVars)
 {
@@ -52,7 +51,7 @@ static J *_buildEnvGetRequest(const char **vars, size_t numVars)
         } else {
             JAddItemToObject(req, "names", names);
             for (size_t i = 0; i < numVars; ++i) {
-                J *varStr = JCreateString(vars[i]);
+                J *varStr = JCreateStringReference(vars[i]);
                 if (varStr != NULL) {
                     JAddItemToArray(names, varStr);
                 } else {
@@ -82,7 +81,7 @@ static J *_buildEnvGetRequest(const char **vars, size_t numVars)
  *                value NEVM_ENV_VAR_ALL, all environment variables will be
  *                fetched, regardless of what is specified by vars.
  *
- * @return NEVM_SUCCESS on success and negative values on failure.
+ * @return NEVM_SUCCESS on success and NEVM_FAILURE on failure.
  */
 int NotecardEnvVarManager_fetch(NotecardEnvVarManager *man, const char **vars,
                                 size_t numVars)
@@ -133,7 +132,7 @@ int NotecardEnvVarManager_fetch(NotecardEnvVarManager *man, const char **vars,
 /**
  * Free a NotecardEnvVarManager's memory.
  *
- * @param man Pointer to a NotecardEnvVarManager object.
+ * @param man Pointer to a NotecardEnvVarManager.
  */
 void NotecardEnvVarManager_free(NotecardEnvVarManager *man)
 {
@@ -160,7 +159,7 @@ NotecardEnvVarManager *NotecardEnvVarManager_alloc(void)
 
 /**
  * Set the callback that the manager will call on every variable:value pair
- * returned by the Notecard.
+ * fetched from the Notecard.
  *
  * @param man     Pointer to a NotecardEnvVarManager object.
  * @param userCb  The callback.
@@ -168,20 +167,20 @@ NotecardEnvVarManager *NotecardEnvVarManager_alloc(void)
  *                to the userCb whenever it's called, allowing the user to
  *                provide arbitrary data to the callback.
  *
- * @return NEVM_SUCCESS on success and negative values on failure.
+ * @return NEVM_SUCCESS on success and NEVM_FAILURE on failure.
  */
 int NotecardEnvVarManager_setEnvVarCb(NotecardEnvVarManager *man,
                                       envVarCb userCb, void *userCtx)
 {
-    int ret = NEVM_FAILURE;
-
-    if (man != NULL) {
-        man->userCb = userCb;
-        man->userCtx = userCtx;
-        ret = NEVM_SUCCESS;
+    if (man == NULL) {
+        NOTE_C_LOG_ERROR("NULL manager.\r\n");
+        return NEVM_FAILURE;
     }
 
-    return ret;
+    man->userCb = userCb;
+    man->userCtx = userCtx;
+
+    return NEVM_SUCCESS;
 }
 
 /**
@@ -190,19 +189,19 @@ int NotecardEnvVarManager_setEnvVarCb(NotecardEnvVarManager *man,
  * @param man     Pointer to a NotecardEnvVarManager object.
  * @param seconds The interval, in seconds.
  *
- * @return NEVM_SUCCESS on success and negative values on failure.
+ * @return NEVM_SUCCESS on success and NEVM_FAILURE on failure.
  */
 int NotecardEnvVarManager_setWatchInterval(NotecardEnvVarManager *man,
         uint32_t seconds)
 {
-    int ret = NEVM_FAILURE;
-
-    if (man != NULL) {
-        man->processIntervalMs = seconds * 1000;
-        ret = NEVM_SUCCESS;
+    if (man == NULL) {
+        NOTE_C_LOG_ERROR("NULL manager.\r\n");
+        return NEVM_FAILURE;
     }
 
-    return ret;
+    man->watchIntervalMs = seconds * 1000;
+
+    return NEVM_SUCCESS;
 }
 
 /**
@@ -218,7 +217,7 @@ int NotecardEnvVarManager_setWatchInterval(NotecardEnvVarManager *man,
  *                     variables will be fetched, regardless of what is
  *                     specified by watchVars.
  *
- * @return NEVM_SUCCESS on success and negative values on failure.
+ * @return NEVM_SUCCESS on success and NEVM_FAILURE on failure.
  */
 int NotecardEnvVarManager_setWatchVars(NotecardEnvVarManager *man,
                                        const char **watchVars,
@@ -229,38 +228,37 @@ int NotecardEnvVarManager_setWatchVars(NotecardEnvVarManager *man,
         return NEVM_FAILURE;
     }
 
-    if (man != NULL) {
-        man->watchVars = watchVars;
-        man->numWatchVars = numWatchVars;
-    }
+    man->watchVars = watchVars;
+    man->numWatchVars = numWatchVars;
 
     return NEVM_SUCCESS;
 }
 
 /**
- * Check for environment changes, if the process interval has lapsed. If the
- * environment has changed, get the watched variables from the Notecard via the
- * Notecard, and call the user-provided environment variable callback on each
- * variable.
+ * Fetch watched environment variables, if the watch interval has lapsed. Call
+ * the user-provided environment variable callback on each variable:value pair.
  *
  * @param man Pointer to a NotecardEnvVarManager object.
  *
  * @return NEVM_SUCCESS on success.
  *         NEVM_FAILURE on failure.
- *         NEVM_WAITING if this function is called before the current process
+ *         NEVM_WAITING if this function is called before the current watch
  *         interval has lapsed.
  *
  * @see NotecardEnvVarManager_setWatchInterval
  */
 int NotecardEnvVarManager_process(NotecardEnvVarManager *man)
 {
-    int ret = NEVM_FAILURE;
+    int ret = NEVM_SUCCESS;
 
-    if (man != NULL) {
+    if (man == NULL) {
+        NOTE_C_LOG_ERROR("NULL manager.\r\n");
+        ret = NEVM_FAILURE;
+    } else {
         uint32_t currentMs = NoteGetMs();
-        if (currentMs - man->lastProcessCallMs >= man->processIntervalMs) {
-            man->lastProcessCallMs = currentMs;
-            NOTE_C_LOG_DEBUG("Process interval lapsed. Processing...\r\n");
+        if (currentMs - man->lastFetchMs >= man->watchIntervalMs) {
+            man->lastFetchMs = currentMs;
+            NOTE_C_LOG_DEBUG("Watch interval lapsed. Processing...\r\n");
             ret = NotecardEnvVarManager_fetch(man, man->watchVars,
                                               man->numWatchVars);
         } else {
