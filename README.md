@@ -37,40 +37,51 @@ Under the hood, both of these use an [`env.get`](https://dev.blues.io/reference/
 typedef void (*envVarCb)(const char *var, const char *val, void *ctx);
 ```
 
-To set the callback, call `NotecardEnvVarManager_setEnvVarCb`. This function also allows the user to set a pointer to an arbitrary "user context," which will be passed to the callback by the manager.
+To set the callback, call `NotecardEnvVarManager_setEnvVarCb`. This function also allows the user to set a pointer to an arbitrary "user context," which will be passed to the callback by the manager. In the example below, the user context is a pointer to a struct used to cache the values of environment variables.
 
 ```c
+typedef struct {
+    int valueA;
+    int valueB;
+    int valueC;
+} EnvVarCache;
+
 void envVarManagerCb(const char *var, const char *val, void *userCtx)
 {
     // Cast the userCtx to the appropriate type.
-    uint32_t* myContext = (uint32_t*)userCtx;
-    float value;
-    char *endPtr;
+    EnvVarCache *cache = (EnvVarCache *)userCtx;
 
     if (strcmp(var, "variable_a") == 0) {
         printf("variable_a has value %s\n", val);
-        // Any other handling for variable_a.
+        cache->valueA = atoi(val);
     }
     else if (strcmp(var, "variable_b") == 0) {
         printf("variable_b has value %s\n", val);
-        // Any other handling for variable_b.
+        cache->valueB = atoi(val);
     }
-    // Handle other variables.
+    else if (strcmp(var, "variable_c") == 0) {
+        printf("variable_c has value %s\n", val);
+        cache->valueC = atoi(val);
+    }
 }
 
-uint32_t myContext = 42;
-if (NotecardEnvVarManager_setEnvVarCb(manager, envVarManagerCb,
-        &myContext) != NEVM_SUCCESS)
+int main(void)
 {
-    // Handle failure.
+    EnvVarCache myCache;
+    if (NotecardEnvVarManager_setEnvVarCb(manager, envVarManagerCb, &myCache) != NEVM_SUCCESS)
+    {
+        // Handle failure.
+    }
 }
 ```
 
 `NotecardEnvVarManager_setEnvVarCb` returns `NEVM_SUCCESS` on success and `NEVM_FAILURE` on failure.
 
+Note that if an environment variable is requested by the user that doesn't exist, nothing for that variable will be returned by the Notecard, and the user's callback won't be called for that variable. Thus, the user doesn't need to worry about their callback being called with the `var` or `val` parameters set to NULL.
+
 ### `NotecardEnvVarManager_fetch`
 
-The simplest way to get variables from the Notecard is by calling `NotecardEnvVarManager_fetch`:
+The simplest way to get variables from the Notecard is by calling `NotecardEnvVarManager_fetch` with an array of C-strings indicating the variables of interest:
 
 ```c
 const char *vars[] = {
@@ -90,7 +101,7 @@ This function returns `NEVM_SUCCESS` on success and `NEVM_FAILURE` on failure. T
 
 ### `NotecardEnvVarManager_process`
 
-The other way of getting variables from the Notecard is by calling `NotecardEnvVarManager_process`. This approach uses "watch variables." A watch variable is an environment variable that the user is interested in fetching from the Notecard. To set watch variables, call `NotecardEnvVarManager_setWatchVars` with an array of C-strings indicating the variables of interest:
+The other way of getting variables from the Notecard is by calling `NotecardEnvVarManager_process`. This approach uses "watch variables." A watch variable is an environment variable that the user is interested in fetching from the Notecard. Similar to `NotecardEnvVarManager_fetch`, the user sets watch variables by calling `NotecardEnvVarManager_setWatchVars` with an array of C-strings indicating the variables of interest:
 
 ```c
 const char *watchVars[] = {
@@ -122,7 +133,7 @@ else if (ret == NEVM_WAITING) {
 
 `NotecardEnvVarManager_process` returns `NEVM_SUCCESS` on success and `NEVM_FAILURE` on failure.
 
-By default, calling `NotecardEnvVarManager_process` will make an `env.get` request whenever it's called. However, the user can set a watch interval so that calls to `NotecardEnvVarManager_process` will only make the `env.get` request every N seconds, no matter how many times the process function is called within that interval. The idea is that the user can continually call `NotecardEnvVarManager_process` in a tight loop (think Arduino's `loop` function) without hammering the Notecard with `env.get` requests. To set a watch interval, call `NotecardEnvVarManager_setWatchInterval`:
+By default, calling `NotecardEnvVarManager_process` will make an `env.get` request whenever it's called. However, the user can set a watch interval so that calls to `NotecardEnvVarManager_process` will only make the `env.get` request every N seconds, no matter how many times the process function is called within that time farme. The idea is that the user can continually call `NotecardEnvVarManager_process` in a tight loop (think Arduino's `loop` function) without hammering the Notecard with `env.get` requests. To set a watch interval, call `NotecardEnvVarManager_setWatchInterval`:
 
 ```c
 const uint32_t watchIntervalSeconds = 10;
@@ -132,7 +143,7 @@ if (ret == NEVM_FAILURE) {
 }
 ```
 
-This function returns `NEVM_SUCCESS` on success and `NEVM_FAILURE` on failure. In the example above, if the function returns successfully, calls to `NotecardEnvVarManager_process` will only make an `env.get` request once every 10 seconds. If multiple calls to `NotecardEnvVarManager_process` are made within that 10 second interval, only the first will make the `env.get` request. The subsequent, redundant calls will return `NEVM_WAITING`, indicating that the manager is "waiting" for the watch interval to lapse.
+This function returns `NEVM_SUCCESS` on success and `NEVM_FAILURE` on failure. In the example above, if the function returns successfully, calls to `NotecardEnvVarManager_process` will only make an `env.get` request once every 10 seconds. If multiple calls to `NotecardEnvVarManager_process` are made within that 10 second time frame, only the first will make the `env.get` request. The subsequent, redundant calls will return `NEVM_WAITING`, indicating that the manager is "waiting" for the watch interval to lapse.
 
 ### `NEVM_ENV_VAR_ALL`
 
