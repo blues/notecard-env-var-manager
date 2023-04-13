@@ -6,7 +6,7 @@ This is a C library for fetching environment variables from a [Notecard](https:/
 
 This library uses
 
-- [note-c](https://github.com/blues/note-c) to communicate with the Notecard
+- [note-c](https://github.com/blues/note-c) to communicate with the Notecard.
 - [Catch2](https://github.com/catchorg/Catch2) for unit testing.
 
 ## Usage
@@ -189,7 +189,7 @@ From the root directory, run this script:
 #### Check for Memory Errors
 
 ```bash
-./scripts/run_unit_tests.sh --memcheck
+./scripts/run_unit_tests.sh --mem-check
 ```
 
 #### Generate Coverage Data
