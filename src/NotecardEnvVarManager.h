@@ -23,13 +23,8 @@ NotecardEnvVarManager *NotecardEnvVarManager_alloc(void);
 int NotecardEnvVarManager_fetch(NotecardEnvVarManager *man, const char **vars,
                                 size_t numVars);
 void NotecardEnvVarManager_free(NotecardEnvVarManager *man);
-int NotecardEnvVarManager_process(NotecardEnvVarManager *man);
 int NotecardEnvVarManager_setEnvVarCb(NotecardEnvVarManager *man,
                                       envVarCb userCb, void *userCtx);
-int NotecardEnvVarManager_setWatchInterval(NotecardEnvVarManager *man,
-        uint32_t seconds);
-int NotecardEnvVarManager_setWatchVars(NotecardEnvVarManager *man,
-                                       const char **watchVars, size_t numWatchVars);
 
 #ifdef __cplusplus
 }

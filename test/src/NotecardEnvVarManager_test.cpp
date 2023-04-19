@@ -27,8 +27,8 @@ FAKE_VALUE_FUNC(J *, NoteTransaction, J *)
 namespace
 {
 
-const size_t numWatchVars = 3;
-const char *watchVars[numWatchVars] = {
+const size_t numVars = 3;
+const char *vars[numVars] = {
     "var_a",
     "var_b",
     "var_c"
@@ -39,14 +39,14 @@ const char *vals[] = {
     "val_c"
 };
 uint32_t userCtx = 42;
-bool changeCbCalled[numWatchVars] = {false, false, false};
+bool changeCbCalled[numVars] = {false, false, false};
 
 void userCb(const char *var, const char *val, void *ctx)
 {
     int ret = NEVM_FAILURE;
 
-    for (size_t i = 0; i < sizeof(watchVars)/sizeof(*watchVars); ++i) {
-        if (strcmp(var, watchVars[i]) == 0 && strcmp(val, vals[i]) == 0 &&
+    for (size_t i = 0; i < sizeof(vars)/sizeof(*vars); ++i) {
+        if (strcmp(var, vars[i]) == 0 && strcmp(val, vals[i]) == 0 &&
                 userCtx == *((uint32_t *)ctx)) {
             changeCbCalled[i] = true;
             break;
@@ -82,8 +82,7 @@ TEST_CASE("NotecardEnvVarManager")
              "\"%s\": \"%s\","
              "\"%s\": \"%s\""
              "}"
-             "}", watchVars[0], vals[0], watchVars[1], vals[1], watchVars[2],
-             vals[2]
+             "}", vars[0], vals[0], vars[1], vals[1], vars[2], vals[2]
             );
     rsp = JParse(rawRsp);
     REQUIRE(rsp != NULL);
@@ -95,14 +94,8 @@ TEST_CASE("NotecardEnvVarManager")
           NEVM_SUCCESS);
 
     SECTION("Fetch") {
-        CHECK(NotecardEnvVarManager_fetch(man, watchVars, numWatchVars)
+        CHECK(NotecardEnvVarManager_fetch(man, vars, numVars)
               == NEVM_SUCCESS);
-    }
-
-    SECTION("Process") {
-        CHECK(NotecardEnvVarManager_setWatchVars(man, watchVars, numWatchVars)
-              == NEVM_SUCCESS);
-        CHECK(NotecardEnvVarManager_process(man) == NEVM_SUCCESS);
     }
 
     SECTION("Fetch with NEVM_ENV_VAR_ALL") {
