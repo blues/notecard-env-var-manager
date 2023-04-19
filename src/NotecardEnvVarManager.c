@@ -9,12 +9,8 @@
 #include "NotecardEnvVarManager.h"
 
 struct NotecardEnvVarManager {
-    const char **watchVars;
     envVarCb userCb;
     void *userCtx;
-    size_t numWatchVars;
-    uint32_t watchIntervalMs;
-    uint32_t lastFetchMs;
 };
 
 /**
@@ -181,90 +177,4 @@ int NotecardEnvVarManager_setEnvVarCb(NotecardEnvVarManager *man,
     man->userCtx = userCtx;
 
     return NEVM_SUCCESS;
-}
-
-/**
- * Set the environment variable manager's watch interval.
- *
- * @param man     Pointer to a NotecardEnvVarManager object.
- * @param seconds The interval, in seconds.
- *
- * @return NEVM_SUCCESS on success and NEVM_FAILURE on failure.
- */
-int NotecardEnvVarManager_setWatchInterval(NotecardEnvVarManager *man,
-        uint32_t seconds)
-{
-    if (man == NULL) {
-        NOTE_C_LOG_ERROR("NULL manager.\r\n");
-        return NEVM_FAILURE;
-    }
-
-    man->watchIntervalMs = seconds * 1000;
-
-    return NEVM_SUCCESS;
-}
-
-/**
- * Set the environment variable manager's watch variables.
- *
- * @param man          Pointer to a NotecardEnvVarManager object.
- * @param watchVars    Pointer to an array of C-strings with the environment
- *                     variables to watch. These strings are not copied by the
- *                     manager, so the caller must ensure the pointers point to
- *                     valid strings for the lifetime of the manager.
- * @param numWatchVars The number of variable strings in watchVars. If set to
- *                     the special value NEVM_ENV_VAR_ALL, all environment
- *                     variables will be fetched, regardless of what is
- *                     specified by watchVars.
- *
- * @return NEVM_SUCCESS on success and NEVM_FAILURE on failure.
- */
-int NotecardEnvVarManager_setWatchVars(NotecardEnvVarManager *man,
-                                       const char **watchVars,
-                                       size_t numWatchVars)
-{
-    if (man == NULL) {
-        NOTE_C_LOG_ERROR("NULL manager.\r\n");
-        return NEVM_FAILURE;
-    }
-
-    man->watchVars = watchVars;
-    man->numWatchVars = numWatchVars;
-
-    return NEVM_SUCCESS;
-}
-
-/**
- * Fetch watched environment variables, if the watch interval has lapsed. Call
- * the user-provided environment variable callback on each variable:value pair.
- *
- * @param man Pointer to a NotecardEnvVarManager object.
- *
- * @return NEVM_SUCCESS on success.
- *         NEVM_FAILURE on failure.
- *         NEVM_WAITING if this function is called before the current watch
- *         interval has lapsed.
- *
- * @see NotecardEnvVarManager_setWatchInterval
- */
-int NotecardEnvVarManager_process(NotecardEnvVarManager *man)
-{
-    int ret = NEVM_SUCCESS;
-
-    if (man == NULL) {
-        NOTE_C_LOG_ERROR("NULL manager.\r\n");
-        ret = NEVM_FAILURE;
-    } else {
-        uint32_t currentMs = NoteGetMs();
-        if (currentMs - man->lastFetchMs >= man->watchIntervalMs) {
-            man->lastFetchMs = currentMs;
-            NOTE_C_LOG_DEBUG("Watch interval lapsed. Processing...\r\n");
-            ret = NotecardEnvVarManager_fetch(man, man->watchVars,
-                                              man->numWatchVars);
-        } else {
-            ret = NEVM_WAITING;
-        }
-    }
-
-    return ret;
 }
