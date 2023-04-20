@@ -147,7 +147,8 @@ NotecardEnvVarManager *NotecardEnvVarManager_alloc(void)
                                      sizeof(NotecardEnvVarManager));
     if (man != NULL) {
         memset(man, 0, sizeof(*man));
-        NOTE_C_LOG_INFO("Successfully allocated NotecardEnvVarManager.\r\n");
+    } else {
+        NOTE_C_LOG_ERROR("Out of memory.\r\n");
     }
 
     return man;
