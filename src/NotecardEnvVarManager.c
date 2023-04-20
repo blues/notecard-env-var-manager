@@ -8,6 +8,12 @@
 
 #include "NotecardEnvVarManager.h"
 
+#ifdef NEVM_TEST
+#include "test_static.h"
+#else
+#define NEVM_STATIC static
+#endif
+
 struct NotecardEnvVarManager {
     envVarCb userCb;
     void *userCtx;
@@ -26,7 +32,7 @@ struct NotecardEnvVarManager {
  *
  * @return Valid request J * on success and NULL on failure.
  */
-static J *_buildEnvGetRequest(const char **vars, size_t numVars)
+NEVM_STATIC J *_buildEnvGetRequest(const char **vars, size_t numVars)
 {
     if (vars == NULL && numVars != NEVM_ENV_VAR_ALL) {
         NOTE_C_LOG_ERROR("vars must be non-NULL unless numVars is "

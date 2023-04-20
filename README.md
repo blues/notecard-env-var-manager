@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/blues/notecard-env-var-manager/badge.svg?branch=main)](https://coveralls.io/github/blues/notecard-env-var-manager?branch=main)
+
 # Notecard Environment Variable Manager
 
 This is a C library for fetching environment variables from a [Notecard](https://blues.io/products/notecard/).
