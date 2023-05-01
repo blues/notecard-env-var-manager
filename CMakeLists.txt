@@ -65,6 +65,7 @@ target_include_directories(
     notecard_env_var_manager
     PUBLIC
         ${NEVM_SRC_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/test/include
         # This allows us to include note-c headers (e.g. note-c/note.h).
         ${FETCHCONTENT_BASE_DIR}
 )
@@ -119,7 +120,6 @@ macro(add_test TEST_NAME)
         ${TEST_NAME}
         PRIVATE
             ${NEVM_TEST_DIR}/include
-        # PRIVATE ${NOTE_C_SRC_DIR}
     )
     target_link_libraries(
         ${TEST_NAME}
@@ -133,7 +133,11 @@ macro(add_test TEST_NAME)
     catch_discover_tests(${TEST_NAME})
 endmacro(add_test)
 
-add_test(NotecardEnvVarManager_test)
+
+add_test(_buildEnvGetRequest_test)
+add_test(NotecardEnvVarManager_alloc_test)
+add_test(NotecardEnvVarManager_fetch_test)
+add_test(NotecardEnvVarManager_setEnvVarCb_test)
 
 if(NEVM_COVERAGE)
     find_program(LCOV lcov REQUIRED)
@@ -152,6 +156,8 @@ if(NEVM_COVERAGE)
     add_custom_target(
         coverage
         COMMAND mkdir -p coverage
+        # Zero out the coverage counters from any previous runs.
+        COMMAND lcov --zerocounters --directory ${CMAKE_CURRENT_LIST_DIR}
         COMMAND ${CMAKE_CTEST_COMMAND}
         WORKING_DIRECTORY ${CMAKE_CURENT_BINARY_DIR}
     )
