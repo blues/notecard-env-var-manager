@@ -1,4 +1,3 @@
-#include <Wire.h>
 #include <Notecard.h>
 
 #include "NotecardEnvVarManager.h"
@@ -38,10 +37,10 @@ void envVarManagerCb(const char *var, const char *val, void *userCtx)
         strncpy(cache->valueA, val, sizeof(cache->valueA));
     }
     else if (strcmp(var, "variable_b") == 0) {
-        strncpy(cache->valueB, val, sizeof(cache->valueA));
+        strncpy(cache->valueB, val, sizeof(cache->valueB));
     }
     else if (strcmp(var, "variable_c") == 0) {
-        strncpy(cache->valueC, val, sizeof(cache->valueA));
+        strncpy(cache->valueC, val, sizeof(cache->valueC));
     }
 }
 
@@ -53,15 +52,25 @@ const char *envVars[] = {
 };
 static const size_t numEnvVars = sizeof(envVars) / sizeof(envVars[0]);
 
+static bool failure = false;
+
 void setup()
 {
-    delay(2500);
     Serial.begin(115200);
+    // Wait for serial to be ready for up to 3 seconds.
+    const size_t serialTimeoutMs = 3000;
+    for (unsigned long startMs = millis(); !Serial
+         && (millis() - startMs) < serialTimeoutMs;);
+
+    if (!Serial) {
+        failure = true;
+        return;
+    }
+
     // Set up debug output via serial connection.
     notecard.setDebugOutputStream(Serial);
 
     // Initialize the physical I/O channel to the Notecard.
-    Wire.begin();
     notecard.begin();
 
     // Issue the hub.set request to set the ProductUID on the Notecard.
@@ -75,14 +84,16 @@ void setup()
     // up, it may need a moment before it's able to receive and respond to
     // requests.
     if (!notecard.sendRequestWithRetry(req, HUB_SET_RETRY_SECONDS)) {
-        notecard.logDebug("hub.set request failed.\r\n");
+        Serial.println("hub.set request failed.");
+        failure = true;
         return;
     }
 
     // Allocate the environment variable manager.
     envVarManager = NotecardEnvVarManager_alloc();
     if (envVarManager == NULL) {
-        notecard.logDebug("Failed to allocate env var manager.\r\n");
+        Serial.println("Failed to allocate env var manager.");
+        failure = true;
         return;
     }
 
@@ -91,26 +102,39 @@ void setup()
     // fetching.
     if (NotecardEnvVarManager_setEnvVarCb(envVarManager, envVarManagerCb,
         &envVarCache) != NEVM_SUCCESS) {
-        notecard.logDebug("Failed to set env var manager callback.\r\n");
+        Serial.println("Failed to set env var manager callback.");
+        failure = true;
         return;
     }
 }
 
 void loop()
 {
+    if (failure) {
+        if (Serial) {
+            Serial.println("Program failed. Halting main loop functionality.");
+        }
+
+        delay(10000);
+        return;
+    }
+
     // Fetch the environment variables every FETCH_INTERVAL_MS milliseconds.
-    uint32_t currentMs = NoteGetMs();
+    unsigned long currentMs = millis();
     if (currentMs - lastFetchMs >= FETCH_INTERVAL_MS) {
         lastFetchMs = currentMs;
         notecard.logDebug("Fetch interval lapsed. Fetching environment "
             "variables...\n");
         if (NotecardEnvVarManager_fetch(envVarManager, envVars, numEnvVars)
             != NEVM_SUCCESS) {
-            notecard.logDebug("NotecardEnvVarManager_fetch failed.\r\n");
+            Serial.println("NotecardEnvVarManager_fetch failed.");
         }
 
-        notecard.logDebugf("variable_a has value %s\r\n", envVarCache.valueA);
-        notecard.logDebugf("variable_b has value %s\r\n", envVarCache.valueB);
-        notecard.logDebugf("variable_c has value %s\r\n", envVarCache.valueC);
+        Serial.print("variable_a has value ");
+        Serial.println(envVarCache.valueA);
+        Serial.print("variable_b has value ");
+        Serial.println(envVarCache.valueB);
+        Serial.print("variable_c has value ");
+        Serial.println(envVarCache.valueC);
     }
 }
