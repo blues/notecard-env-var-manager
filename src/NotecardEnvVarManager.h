@@ -7,7 +7,6 @@ extern "C" {
 #endif
 
 enum {
-    NEVM_WAITING = -2,
     NEVM_FAILURE = -1,
     NEVM_SUCCESS = 0
 };
