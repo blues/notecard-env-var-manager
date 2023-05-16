@@ -33,7 +33,7 @@ We'll be using [the Swan](https://dev.blues.io/swan/introduction-to-swan/) as ou
 - Cellular antenna
 - Notecarrier F
 
-You can get the Notecard, antenna, and Notecarrier F all in one bundle with the [Blues Starter Kit](https://shop.blues.io/collections/blues-starter-kits)
+You can get the Notecard, antenna, and Notecarrier F all in one bundle with the [Blues Starter Kit](https://shop.blues.io/collections/blues-starter-kits).
 
 ## Arduino IDE
 
