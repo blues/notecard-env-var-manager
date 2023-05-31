@@ -32,6 +32,14 @@ void envVarManagerCb(const char *var, const char *val, void *userCtx)
 {
     EnvVarCache *cache = (EnvVarCache *)userCtx;
 
+    Serial.print("\nCallback received variable \"");
+    Serial.print(var);
+    Serial.print("\" with value \"");
+    Serial.print(val);
+    Serial.print("\" and context 0x");
+    Serial.print((unsigned long)userCtx, HEX);
+    Serial.println(".");
+
     // Cache the values for each variable.
     if (strcmp(var, "variable_a") == 0) {
         strlcpy(cache->valueA, val, sizeof(cache->valueA));
@@ -42,6 +50,14 @@ void envVarManagerCb(const char *var, const char *val, void *userCtx)
     else if (strcmp(var, "variable_c") == 0) {
         strlcpy(cache->valueC, val, sizeof(cache->valueC));
     }
+
+    Serial.println("Cached values:");
+    Serial.print("- variable_a has value ");
+    Serial.println(envVarCache.valueA);
+    Serial.print("- variable_b has value ");
+    Serial.println(envVarCache.valueB);
+    Serial.print("- variable_c has value ");
+    Serial.println(envVarCache.valueC);
 }
 
 // These are the environment variables we'll be fetching from the Notecard.
@@ -79,6 +95,7 @@ void setup()
        JAddStringToObject(req, "product", PRODUCT_UID);
     }
     JAddStringToObject(req, "mode", "continuous");
+    JAddStringToObject(req, "sn", "arduino-env-var-manager");
     JAddBoolToObject(req, "sync", true);
     // Send the request with a retry timeout. If the Notecard has just started
     // up, it may need a moment before it's able to receive and respond to
@@ -129,12 +146,5 @@ void loop()
             != NEVM_SUCCESS) {
             Serial.println("NotecardEnvVarManager_fetch failed.");
         }
-
-        Serial.print("variable_a has value ");
-        Serial.println(envVarCache.valueA);
-        Serial.print("variable_b has value ");
-        Serial.println(envVarCache.valueB);
-        Serial.print("variable_c has value ");
-        Serial.println(envVarCache.valueC);
     }
 }
