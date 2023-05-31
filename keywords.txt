@@ -1,0 +1,28 @@
+########################################
+# Syntax Coloring Map NotecardEnvVarManager
+########################################
+
+########################################
+# Datatypes (KEYWORD1)
+########################################
+envVarCb			KEYWORD1
+
+########################################
+# Methods and Functions (KEYWORD2)
+########################################
+NotecardEnvVarManager_alloc	KEYWORD2
+NotecardEnvVarManager_fetch	KEYWORD2
+NotecardEnvVarManager_free	KEYWORD2
+NotecardEnvVarManager_setEnvVarCb	KEYWORD2
+
+########################################
+# Structures (KEYWORD3)
+########################################
+NotecardEnvVarManager		KEYWORD3
+
+########################################
+# Constants (LITERAL1)
+########################################
+NEVM_ENV_VAR_ALL		LITERAL1
+NEVM_FAILURE			LITERAL1
+NEVM_SUCCESS			LITERAL1

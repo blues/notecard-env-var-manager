@@ -48,7 +48,7 @@ Navigate to File > Open > and select `arduino.ino` on your filesystem. Follow [t
 
 Click Tools > Serial Monitor and set the baud rate to 115200 baud. You should see this output like this:
 
-```
+```none
 Fetch interval lapsed. Fetching environment variables...
 {"req":"env.get","names":["variable_a","variable_b","variable_c"]}
 {"body":{"variable_a":"Blues","variable_b":"is","variable_c":"cool!"}}
@@ -59,7 +59,7 @@ variable_c has value cool!
 
 If you change the value of one of the variables on Notehub, you should see that reflected in the serial output shortly:
 
-```
+```none
 Fetch interval lapsed. Fetching environment variables...
 {"req":"env.get","names":["variable_a","variable_b","variable_c"]}
 {"body":{"variable_a":"IoT","variable_b":"is","variable_c":"cool!"}}
