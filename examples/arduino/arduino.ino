@@ -34,13 +34,13 @@ void envVarManagerCb(const char *var, const char *val, void *userCtx)
 
     // Cache the values for each variable.
     if (strcmp(var, "variable_a") == 0) {
-        strncpy(cache->valueA, val, sizeof(cache->valueA));
+        strlcpy(cache->valueA, val, sizeof(cache->valueA));
     }
     else if (strcmp(var, "variable_b") == 0) {
-        strncpy(cache->valueB, val, sizeof(cache->valueB));
+        strlcpy(cache->valueB, val, sizeof(cache->valueB));
     }
     else if (strcmp(var, "variable_c") == 0) {
-        strncpy(cache->valueC, val, sizeof(cache->valueC));
+        strlcpy(cache->valueC, val, sizeof(cache->valueC));
     }
 }
 
