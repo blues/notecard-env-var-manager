@@ -22,7 +22,7 @@ The `main.c` code sends a request to Notehub every 20 seconds for these environm
 
 Navigate to your [Notehub project](https://notehub.io/projects), click the Devices tab, double-click your device, and open the Environment tab. Under "Device environment variables", set a value for each variable and click Save:
 
-![Settings variables on Notehub](../images/setting_vars_on_notehub.png "Settings variables on Notehub")
+![Settings variables on Notehub](../../images/setting_vars_on_notehub.png "Settings variables on Notehub")
 
 ## Hardware
 
@@ -51,7 +51,7 @@ To build and flash the firmware, you'll need:
 
 These instructions will defer parts of the build process to the [Blues Zephyr SDK documentation](https://dev.blues.io/tools-and-sdks/firmware-libraries/zephyr-sdk) (the "Zephyr SDK docs"). Though these instructions are for the [note-zephyr repo](https://github.com/blues/note-zephyr), the same patterns for building the code are used here.
 
-1. Start VS Code and select File > Open Folder and pick `notecard-env-var-manager/examples/zephyr`.
+1. Start VS Code and select File > Open Folder and pick `notecard-env-var-manager/samples/zephyr`.
 1. Follow the instructions for your OS in the [Zephyr SDK docs' "Building the Dev Container" section](https://dev.blues.io/tools-and-sdks/firmware-libraries/zephyr-sdk/#building-the-dev-container).
 1. Follow the [Zephyr SDK docs' "Building and Running" section](https://dev.blues.io/tools-and-sdks/firmware-libraries/zephyr-sdk/#building-and-running).
 

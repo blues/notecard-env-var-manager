@@ -1,5 +1,3 @@
-#ifndef ARDUINO
-
 #include <string.h>
 #include <zephyr/kernel.h>
 #include "note-c/note.h"
@@ -125,5 +123,3 @@ int main(void)
 
     return 0;
 }
-
-#endif // !ARDUINO
