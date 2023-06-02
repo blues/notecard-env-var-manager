@@ -5,6 +5,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(notecard_env_var_manager_zephyr_example)
 
 set(SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(NEVM_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../../src)
 set(NOTE_C_DIR ${CMAKE_CURRENT_LIST_DIR}/note-c)
 set(NOTE_ZEPHYR_DIR ${CMAKE_CURRENT_LIST_DIR}/note-zephyr/src)
 
@@ -27,15 +28,17 @@ target_sources(
         ${NOTE_C_DIR}/n_md5.c
         ${NOTE_C_DIR}/n_request.c
         ${NOTE_C_DIR}/n_str.c
+        # notecard_env_var_manager sources.
+        ${NEVM_SRC_DIR}/NotecardEnvVarManager.c
         # note-zephyr sources.
         ${NOTE_ZEPHYR_DIR}/note_c_hooks.c
         # Application sources.
         ${SRC_DIR}/main.c
-        ${SRC_DIR}/NotecardEnvVarManager.c
 )
 target_include_directories(
     app
     PRIVATE
-        ${NOTE_ZEPHYR_DIR}
         ${SRC_DIR}
+        ${NEVM_SRC_DIR}
+        ${NOTE_ZEPHYR_DIR}
 )

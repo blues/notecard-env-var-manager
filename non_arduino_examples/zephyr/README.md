@@ -51,7 +51,7 @@ To build and flash the firmware, you'll need:
 
 These instructions will defer parts of the build process to the [Blues Zephyr SDK documentation](https://dev.blues.io/tools-and-sdks/firmware-libraries/zephyr-sdk) (the "Zephyr SDK docs"). Though these instructions are for the [note-zephyr repo](https://github.com/blues/note-zephyr), the same patterns for building the code are used here.
 
-1. Start VS Code and select File > Open Folder and pick `notecard-env-var-manager/samples/zephyr`.
+1. Start VS Code and select File > Open Folder and pick `notecard-env-var-manager/non_arduino_examples/zephyr`.
 1. Follow the instructions for your OS in the [Zephyr SDK docs' "Building the Dev Container" section](https://dev.blues.io/tools-and-sdks/firmware-libraries/zephyr-sdk/#building-the-dev-container).
 1. Follow the [Zephyr SDK docs' "Building and Running" section](https://dev.blues.io/tools-and-sdks/firmware-libraries/zephyr-sdk/#building-and-running).
 
