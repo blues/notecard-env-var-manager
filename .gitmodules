@@ -1,6 +1,6 @@
-[submodule "examples/zephyr/note-c"]
-	path = examples/zephyr/note-c
-	url = https://github.com/blues/note-c
-[submodule "examples/zephyr/note-zephyr"]
-	path = examples/zephyr/note-zephyr
+[submodule "samples/zephyr/note-zephyr"]
+	path = samples/zephyr/note-zephyr
 	url = https://github.com/blues/note-zephyr.git
+[submodule "samples/zephyr/note-c"]
+	path = samples/zephyr/note-c
+	url = https://github.com/blues/note-c

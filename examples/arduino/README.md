@@ -22,7 +22,7 @@ The `arduino.ino` code sends a request to Notehub every 20 seconds for these env
 
 Navigate to your [Notehub project](https://notehub.io/projects), click the Devices tab, double-click your device, and open the Environment tab. Under "Device environment variables", set a value for each variable and click Save:
 
-![Settings variables on Notehub](../images/setting_vars_on_notehub.png "Settings variables on Notehub")
+![Settings variables on Notehub](../../images/setting_vars_on_notehub.png "Settings variables on Notehub")
 
 ## Hardware
 
@@ -44,7 +44,7 @@ Open the IDE and follow these two sections of the [Swan Quickstart](https://dev.
 
 Then, install the Notecard Arduino library by following [these instructions](https://dev.blues.io/tools-and-sdks/firmware-libraries/arduino-library/#installation)
 
-Navigate to File > Open > and select `arduino.ino` on your filesystem. Follow [these instructions](https://dev.blues.io/quickstart/swan-quickstart/#programming-swan-the-stlink-v3mini) to prepare the Swan for programming and click the Upload button.
+Navigate to File > Open > and select `arduino/arduino.ino` on your filesystem. Follow [these instructions](https://dev.blues.io/quickstart/swan-quickstart/#programming-swan-the-stlink-v3mini) to prepare the Swan for programming and click the Upload button.
 
 Click Tools > Serial Monitor and set the baud rate to 115200 baud. You should see this output like this:
 

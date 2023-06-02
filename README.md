@@ -101,6 +101,10 @@ if (ret != NEVM_SUCCESS) {
 }
 ```
 
+## Samples/Examples
+
+The `samples` directory contains all non-Arduino examples of how to use this library, while `examples` contains solely the Arduino examples. [The Arduino library specification requires that the folder containing Arduino examples specifically be named "examples"](https://arduino.github.io/arduino-cli/0.33/library-specification/#library-examples), hence this separation.
+
 ## Unit Tests
 
 ### Dependencies
