@@ -34,7 +34,9 @@ include(FetchContent)
 FetchContent_Declare(
     note_c
     GIT_REPOSITORY https://github.com/blues/note-c.git
-    GIT_TAG        master
+    # v2.3.1+ builds its shared test library with -m32, and v2.6.1+ defines
+    # note_c only for note-c's own tests.
+    GIT_TAG        v2.2.1
     # Download note-c into a directory called note-c under the _deps directory.
     # This is required for the note-c includes in the manager code to resolve
     # correctly.
