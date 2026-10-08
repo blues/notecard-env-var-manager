@@ -7,8 +7,9 @@
 # Launch development environment (mount source root as /notecard_env_var_manager/)
 # $ docker run --rm --volume $(pwd)/../../../:/notecard_env_var_manager/ --workdir /notecard_env_var_manager/ notecard_env_var_manager_run_unit_tests
 
-# POSIX compatible (Linux/Unix) base image.
-FROM debian:stable-slim
+# POSIX compatible (Linux/Unix) base image. Pinned to bookworm because Catch2
+# v3.2.1 (below) doesn't compile with the GCC in Debian 13.
+FROM debian:bookworm-slim
 
 # Install whatever dependencies we can via apt-get.
 RUN ["dash", "-c", "\
