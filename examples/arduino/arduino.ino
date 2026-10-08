@@ -11,8 +11,6 @@
 #pragma message "PRODUCT_UID is not defined in this example. Please ensure your Notecard has a product identifier set before running this example or define it in code here. More details at https://bit.ly/product-uid"
 #endif
 
-// 5 second timeout for retrying the hub.set request.
-#define HUB_SET_RETRY_SECONDS 5
 // Fetch every 20 seconds.
 #define FETCH_INTERVAL_MS (20 * 1000)
 
@@ -97,10 +95,7 @@ void setup()
     JAddStringToObject(req, "mode", "continuous");
     JAddStringToObject(req, "sn", "arduino-env-var-manager");
     JAddBoolToObject(req, "sync", true);
-    // Send the request with a retry timeout. If the Notecard has just started
-    // up, it may need a moment before it's able to receive and respond to
-    // requests.
-    if (!notecard.sendRequestWithRetry(req, HUB_SET_RETRY_SECONDS)) {
+    if (!notecard.sendRequest(req)) {
         Serial.println("hub.set request failed.");
         failure = true;
         return;
